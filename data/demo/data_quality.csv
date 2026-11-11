@@ -1,0 +1,17 @@
+check_name,value,note
+event_rows,108313.0,All rows in events_base
+null_user_id_rows,0.0,Excluded from user metrics
+null_session_id_rows,0.0,Excluded from session metrics
+null_device_rows,0.0,Shown as (not set)
+not_set_country_rows,1035.0,Shown as (not set)
+data_deleted_source_rows,8773.0,Obfuscation artefact; channel = Data deleted
+other_source_rows,18628.0,Obfuscation artefact; channel = Other
+utc_date_differs_rows,0.0,"event_date is property time zone, timestamp is UTC"
+duplicate_extra_copies,0.0,"Same user, microsecond, event and session; reported, not removed"
+purchase_events,265.0,Rows with event_name = purchase
+purchase_null_or_not_set_transaction_id,5.0,Excluded from validated orders
+purchase_null_revenue,0.0,Treated as 0 revenue
+validated_orders,245.0,Distinct valid transaction_id
+orders_with_repeat_purchase_events,15.0,Reason revenue is de-duplicated
+revenue_summing_every_event_usd,14254.0,NOT used: may double count
+revenue_deduplicated_usd,13301.0,Used everywhere in this project

@@ -1,0 +1,19 @@
+device_category,channel_group,sessions,seq_view,seq_cart,seq_checkout,seq_purchase,any_purchase
+desktop,Organic search,71068,14906,2698,898,443,744
+mobile,Organic search,49050,10264,1933,660,342,580
+desktop,Direct,48651,10402,2081,720,358,619
+desktop,Referral,36837,8172,1661,623,341,595
+mobile,Direct,32968,6910,1358,503,270,435
+desktop,Other,30171,6116,1163,390,173,289
+mobile,Referral,25290,5603,1190,438,254,438
+mobile,Other,20692,4211,764,264,119,203
+desktop,Data deleted,13095,3346,841,368,225,404
+desktop,Paid search,9120,1877,332,110,61,98
+mobile,Data deleted,9049,2297,608,262,160,287
+mobile,Paid search,6136,1216,217,67,27,52
+tablet,Organic search,2723,570,101,33,13,23
+tablet,Direct,1840,366,66,25,15,25
+tablet,Referral,1394,314,63,22,14,23
+tablet,Other,1195,262,54,14,7,14
+tablet,Data deleted,488,113,21,12,9,16
+tablet,Paid search,362,75,16,7,3,3

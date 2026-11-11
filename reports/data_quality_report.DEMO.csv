@@ -1,0 +1,28 @@
+check,status,detail
+Null user ids,PASS,0 rows (0.000%) - excluded from user metrics
+Null session ids,PASS,0 rows (0.000%) - excluded from session metrics
+Exact duplicate events,PASS,"0 extra copies (0.000%) - reported, not removed"
+Purchases without a usable transaction id,REVIEW,5 of 265 purchase events - excluded from validated orders
+Revenue double counting risk,REVIEW,summing every purchase event gives $953.00 more than de-duplicated revenue
+dim_user is unique per user,PASS,0 duplicate user ids
+fact_user_day is unique per user-day,PASS,0 duplicate user-day rows
+Every fact row has a user in dim_user,PASS,0 orphan rows
+User count matches the SQL overview,PASS,"dim_user 12,000 vs SQL 12,000"
+No missing values in the fact table,PASS,0 missing cells
+All fact dates are inside the sample period,PASS,0 rows outside 2020-11-01 to 2021-01-31
+first_seen_dt <= last_seen_dt,PASS,0 users violate this
+first_seen_dt equals the first fact date,PASS,0 users differ
+cohort_month is the month of first_seen_dt,PASS,checked for all users
+Device categories are the expected set,PASS,"found ['desktop', 'mobile', 'tablet']"
+Country is populated,PASS,1.01% of users have country '(not set)'
+Users seen on more than one device,PASS,0.00% of users - they are assigned their FIRST device
+transaction_id is unique in the transactions table,PASS,0 duplicates
+Orders recorded by more than one purchase event,REVIEW,15 of 245 orders (6.12%) - this is why revenue is de-duplicated
+Orders with conflicting revenue values,PASS,0 orders
+Orders shared by more than one user id,PASS,0 orders
+Orders with zero or missing revenue,PASS,0 orders (0.00%)
+Orders reconcile: fact vs transactions,PASS,fact 245 vs transactions 245
+Revenue reconciles: fact vs transactions,PASS,"fact $13,301.00 vs transactions $13,301.00"
+Revenue reconciles: daily_metrics vs transactions,PASS,"daily $13,301.00 vs transactions $13,301.00"
+Extreme order values,PASS,0 orders above $204.00
+Extreme user-days (possible bots or staff),REVIEW,1 user-days above 24 events; top 0.1% starts at 20 events

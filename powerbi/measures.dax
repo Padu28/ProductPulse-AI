@@ -1,0 +1,208 @@
+// =====================================================================
+// ProductPulse AI | DAX measures
+// Create a blank table called "_Measures" (Home > Enter data > Load) and
+// add each measure with Modeling > New measure. Paste one block at a time.
+//
+// Model (see powerbi/BUILD_GUIDE.md):
+//   dim_user[user_pseudo_id] 1 --- * fact_user_day[user_pseudo_id]
+//   dim_date[Date]           1 --- * fact_user_day[event_dt]
+//
+// Every user measure is a DISTINCTCOUNT on the fact table, so it stays
+// correct under any slicer (date, device, country, channel).
+// =====================================================================
+
+// ---------- Headline KPIs ----------
+Active Users =
+DISTINCTCOUNT ( fact_user_day[user_pseudo_id] )
+
+Purchasers =
+CALCULATE (
+    DISTINCTCOUNT ( fact_user_day[user_pseudo_id] ),
+    fact_user_day[purchased] = 1
+)
+
+Validated Orders =
+SUM ( fact_user_day[transactions] )
+
+Revenue USD =
+SUM ( fact_user_day[revenue_usd] )
+
+User Purchase Conversion =
+DIVIDE ( [Purchasers], [Active Users] )
+
+Average Order Value =
+DIVIDE ( [Revenue USD], [Validated Orders] )
+
+Revenue per User =
+DIVIDE ( [Revenue USD], [Active Users] )
+
+Events =
+SUM ( fact_user_day[events] )
+
+// A session that crosses midnight is counted on both days (about a rounding
+// error at this scale). Use the session_funnel table for exact session counts.
+Sessions (approx) =
+SUM ( fact_user_day[sessions] )
+
+// ---------- User-level funnel (stage presence) ----------
+Users Viewed Item =
+CALCULATE ( DISTINCTCOUNT ( fact_user_day[user_pseudo_id] ), fact_user_day[viewed_item] = 1 )
+
+Users Added to Cart =
+CALCULATE ( DISTINCTCOUNT ( fact_user_day[user_pseudo_id] ), fact_user_day[added_cart] = 1 )
+
+Users Began Checkout =
+CALCULATE ( DISTINCTCOUNT ( fact_user_day[user_pseudo_id] ), fact_user_day[began_checkout] = 1 )
+
+View to Cart Rate =
+DIVIDE ( [Users Added to Cart], [Users Viewed Item] )
+
+Cart to Checkout Rate =
+DIVIDE ( [Users Began Checkout], [Users Added to Cart] )
+
+Checkout to Purchase Rate =
+DIVIDE ( [Purchasers], [Users Began Checkout] )
+
+View to Purchase Rate =
+DIVIDE ( [Purchasers], [Users Viewed Item] )
+
+// One measure that follows a disconnected "Funnel Stage" table, so a single
+// bar chart can show all four stages. Create the table first (BUILD_GUIDE step 4).
+Funnel Users =
+SWITCH (
+    SELECTEDVALUE ( 'Funnel Stage'[Stage Order] ),
+    1, [Users Viewed Item],
+    2, [Users Added to Cart],
+    3, [Users Began Checkout],
+    4, [Purchasers]
+)
+
+Funnel Step Conversion =
+VAR CurrentStage = SELECTEDVALUE ( 'Funnel Stage'[Stage Order] )
+VAR PreviousUsers =
+    SWITCH (
+        CurrentStage,
+        2, [Users Viewed Item],
+        3, [Users Added to Cart],
+        4, [Users Began Checkout]
+    )
+RETURN
+    IF ( CurrentStage > 1, DIVIDE ( [Funnel Users], PreviousUsers ) )
+
+Funnel Drop-off Users =
+VAR CurrentStage = SELECTEDVALUE ( 'Funnel Stage'[Stage Order] )
+VAR PreviousUsers =
+    SWITCH (
+        CurrentStage,
+        2, [Users Viewed Item],
+        3, [Users Added to Cart],
+        4, [Users Began Checkout]
+    )
+RETURN
+    IF ( CurrentStage > 1, PreviousUsers - [Funnel Users] )
+
+Funnel Share of First Stage =
+DIVIDE ( [Funnel Users], [Users Viewed Item] )
+
+// ---------- Sequential session funnel (from the session_funnel table) ----------
+Sessions =
+SUM ( session_funnel[sessions] )
+
+Seq Sessions View =
+SUM ( session_funnel[seq_view] )
+
+Seq Sessions Cart =
+SUM ( session_funnel[seq_cart] )
+
+Seq Sessions Checkout =
+SUM ( session_funnel[seq_checkout] )
+
+Seq Sessions Purchase =
+SUM ( session_funnel[seq_purchase] )
+
+Seq View to Cart Rate =
+DIVIDE ( [Seq Sessions Cart], [Seq Sessions View] )
+
+Seq Cart to Checkout Rate =
+DIVIDE ( [Seq Sessions Checkout], [Seq Sessions Cart] )
+
+Seq Checkout to Purchase Rate =
+DIVIDE ( [Seq Sessions Purchase], [Seq Sessions Checkout] )
+
+// ---------- Cohort retention ----------
+// Needs two calculated columns (BUILD_GUIDE step 3):
+//   fact_user_day[Month Number] and dim_user[Cohort Label].
+// Use dim_user[Cohort Label] on rows and fact_user_day[Month Number] on columns.
+//
+// Cohort Users counts dim_user directly. Filters on fact_user_day (Month Number)
+// and dim_date (the date slicer) do not flow to dim_user, so the denominator is
+// always the full cohort. Do NOT wrap it in REMOVEFILTERS(fact_user_day): that
+// clears the expanded fact table, which includes dim_user, and the denominator
+// silently becomes all users (month 0 would show 29% instead of 100%).
+Cohort Users =
+DISTINCTCOUNT ( dim_user[user_pseudo_id] )
+
+Cohort Active Users =
+CALCULATE (
+    DISTINCTCOUNT ( fact_user_day[user_pseudo_id] ),
+    REMOVEFILTERS ( dim_date )
+)
+
+// BLANK (not 0) when the cohort has no observable data for that month.
+Retention Rate =
+VAR ActiveUsers = [Cohort Active Users]
+RETURN
+    IF ( NOT ISBLANK ( ActiveUsers ), DIVIDE ( ActiveUsers, [Cohort Users] ) )
+
+// ---------- Repeat activity ----------
+Avg Active Days per User =
+DIVIDE ( COUNTROWS ( fact_user_day ), [Active Users] )
+
+Single-day Users =
+COUNTROWS (
+    FILTER (
+        VALUES ( fact_user_day[user_pseudo_id] ),
+        CALCULATE ( COUNTROWS ( fact_user_day ) ) = 1
+    )
+)
+
+Single-day User Share =
+DIVIDE ( [Single-day Users], [Active Users] )
+
+// ---------- Products (product_performance table, whole period) ----------
+Product Viewers =
+SUM ( product_performance[users_viewed] )
+
+Product Buyers =
+SUM ( product_performance[users_purchased] )
+
+Product Item Revenue USD =
+SUM ( product_performance[item_revenue_usd] )
+
+// Only meaningful for ONE product at a time (users are distinct per item,
+// so sums across items double count people). Blank when several are selected.
+Viewer to Buyer Rate =
+IF (
+    HASONEVALUE ( product_performance[item_name] ),
+    DIVIDE ( [Product Buyers], [Product Viewers] )
+)
+
+// ---------- Labels ----------
+Reporting Period =
+FORMAT ( MIN ( fact_user_day[event_dt] ), "d mmm yyyy" ) & " to "
+    & FORMAT ( MAX ( fact_user_day[event_dt] ), "d mmm yyyy" )
+
+Largest Drop-off Label =
+VAR ViewToCart = 1 - [View to Cart Rate]
+VAR CartToCheckout = 1 - [Cart to Checkout Rate]
+VAR CheckoutToPurchase = 1 - [Checkout to Purchase Rate]
+VAR Worst = MAX ( MAX ( ViewToCart, CartToCheckout ), CheckoutToPurchase )
+RETURN
+    "Largest step drop-off: "
+        & SWITCH (
+            TRUE (),
+            Worst = ViewToCart, "View item to Add to cart",
+            Worst = CartToCheckout, "Add to cart to Begin checkout",
+            "Begin checkout to Purchase"
+        )
+        & " (" & FORMAT ( Worst, "0.0%" ) & " did not continue)"

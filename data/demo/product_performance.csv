@@ -1,0 +1,21 @@
+item_name,item_category,users_viewed,users_added_cart,users_purchased,orders,units_purchased,item_revenue_usd
+Demo Item 01,Apparel,829,188,36,36,80,1920.0
+Demo Item 02,Apparel,508,116,25,26,54,1728.0
+Demo Item 03,Apparel,436,98,22,20,43,774.0
+Demo Item 04,Apparel,369,89,26,26,53,2385.0
+Demo Item 05,Apparel,300,62,16,16,34,952.0
+Demo Item 06,Bags,290,78,17,16,36,1980.0
+Demo Item 08,Drinkware,252,61,11,11,22,308.0
+Demo Item 07,Bags,249,52,16,16,35,1330.0
+Demo Item 09,Drinkware,236,56,6,6,13,260.0
+Demo Item 10,Drinkware,212,36,5,5,13,208.0
+Demo Item 14,Accessories,181,43,8,8,20,160.0
+Demo Item 13,Office,181,40,8,7,15,180.0
+Demo Item 11,Office,178,32,5,5,10,60.0
+Demo Item 19,Campus,164,38,8,8,15,285.0
+Demo Item 12,Office,160,43,7,7,22,198.0
+Demo Item 15,Accessories,158,33,7,7,12,180.0
+Demo Item 17,Lifestyle,153,37,10,10,19,570.0
+Demo Item 16,Lifestyle,152,38,10,10,24,528.0
+Demo Item 20,Clearance,143,19,2,1,4,40.0
+Demo Item 18,Campus,125,25,4,4,8,208.0

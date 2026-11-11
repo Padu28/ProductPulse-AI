@@ -1,0 +1,2 @@
+first_event_date,last_event_date,days_with_data,event_rows,identified_users,null_user_id_rows,null_session_id_rows,sessions,distinct_event_names
+2020-11-01,2021-01-31,92,4295584,270154,0,0,360129,17

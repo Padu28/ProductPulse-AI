@@ -1,0 +1,30 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Secrets and credentials - never commit these
+.env
+*.env
+*service-account*.json
+*credentials*.json
+application_default_credentials.json
+.streamlit/secrets.toml
+
+# Local data extracts (contain user-level rows; re-create with the export script)
+data/exports/
+data/raw/
+data/processed/
+*.parquet
+
+# Demo figures and scratch output
+reports/figures/DEMO_*
+ai/outputs/DEMO_*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
